@@ -10,7 +10,7 @@ import { setPro } from './services';
 
 // PASTE YOUR KEY: RevenueCat dashboard → Project → API keys → Apple App Store.
 // Starts with "appl_". The Google key can be added later for Android.
-const REVENUECAT_IOS_API_KEY = 'appl_PASTE_YOUR_KEY_HERE';
+const REVENUECAT_IOS_API_KEY = 'appl_NtbPFeIlKuImVRgpYeQWFbkvrtu';
 
 export const PRO_ENTITLEMENT_ID = 'Pro';
 
