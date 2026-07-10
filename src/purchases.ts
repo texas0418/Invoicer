@@ -12,7 +12,7 @@ import { setPro } from './services';
 // Starts with "appl_". The Google key can be added later for Android.
 const REVENUECAT_IOS_API_KEY = 'appl_PASTE_YOUR_KEY_HERE';
 
-export const PRO_ENTITLEMENT_ID = 'pro';
+export const PRO_ENTITLEMENT_ID = 'Pro';
 
 type PurchasesModule = typeof import('react-native-purchases').default;
 
