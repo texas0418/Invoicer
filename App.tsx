@@ -11,6 +11,7 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import { useEffect } from 'react';
 import { Invoice } from './src/models';
 import { hasOnboarded } from './src/services';
+import { initPurchases } from './src/purchases';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
 type Screen =
@@ -25,6 +26,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'loading' });
 
   useEffect(() => {
+    initPurchases();
     hasOnboarded().then((done) =>
       setScreen(done ? { name: 'home' } : { name: 'onboarding' }),
     );

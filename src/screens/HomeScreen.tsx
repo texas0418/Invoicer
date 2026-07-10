@@ -34,7 +34,30 @@ import {
   scheduleDueReminder,
   setPro,
 } from '../services';
+import { purchasePro } from '../purchases';
 import { shadow, statusTint, T } from '../theme';
+
+
+// Shared purchase flow: real RevenueCat purchase in builds; dev unlock in Expo Go.
+async function runUpgrade(onSuccess: () => void): Promise<void> {
+  const res = await purchasePro();
+  if (res.ok) {
+    onSuccess();
+    return;
+  }
+  if ('cancelled' in res) return;
+  if ('unavailable' in res) {
+    if (__DEV__) {
+      // Expo Go has no native purchases module — unlock for development only.
+      await setPro(true);
+      onSuccess();
+      return;
+    }
+    Alert.alert('Purchases unavailable', 'Please try again later.');
+    return;
+  }
+  Alert.alert('Purchase failed', res.error);
+}
 
 const INVOICE_FILTERS = ['all', 'draft', 'sent', 'paid', 'overdue'] as const;
 const ESTIMATE_FILTERS = ['all', 'draft', 'sent', 'accepted', 'declined'] as const;
@@ -91,7 +114,7 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
       }
       Alert.alert(
         'Estimates are a Pro feature',
-        'Send professional quotes and convert accepted ones to invoices in one tap. One-time purchase — no subscription.',
+        'Send professional quotes and convert accepted ones to invoices in one tap. Included in Pro — $19.99 once, no subscription.',
         [
           { text: 'Not now', style: 'cancel' },
           {
@@ -113,16 +136,12 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
     Alert.alert(
       'Free limit reached',
       `You've created ${FREE_INVOICES_PER_MONTH} invoices this month. ` +
-        'Upgrade to Pro for unlimited invoices. One-time purchase — no subscription.',
+        'Upgrade to Pro for unlimited invoices, 16 more templates, and estimates. $19.99 once — no subscription.',
       [
         { text: 'Not now', style: 'cancel' },
         {
           text: 'Upgrade',
-          onPress: async () => {
-            // TODO: replace with RevenueCat purchase flow before launch.
-            await setPro(true);
-            onNewInvoice();
-          },
+          onPress: () => runUpgrade(onNewInvoice),
         },
       ],
     );

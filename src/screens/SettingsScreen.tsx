@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { FREE_TEMPLATE_ID, TEMPLATES } from '../invoiceHtml';
 import { exportBackup, restoreBackup } from '../backup';
+import { purchasePro, restorePurchases } from '../purchases';
 import {
   FREE_INVOICES_PER_MONTH,
   getBusinessProfile,
@@ -70,16 +71,30 @@ export default function SettingsScreen({ onDone }: Props) {
     }
     Alert.alert(
       'Pro feature',
-      'Templates and logos are part of Pro. One-time purchase — no subscription.',
+      'All 17 templates are part of Pro. $19.99 once — no subscription.',
       [
         { text: 'Not now', style: 'cancel' },
         {
           text: 'Upgrade',
           onPress: async () => {
-            // TODO: replace with RevenueCat purchase flow before launch.
-            await setPro(true);
-            setProState(true);
-            then();
+            const res = await purchasePro();
+            if (res.ok) {
+              setProState(true);
+              then();
+              return;
+            }
+            if ('cancelled' in res) return;
+            if ('unavailable' in res) {
+              if (__DEV__) {
+                await setPro(true);
+                setProState(true);
+                then();
+                return;
+              }
+              Alert.alert('Purchases unavailable', 'Please try again later.');
+              return;
+            }
+            Alert.alert('Purchase failed', res.error);
           },
         },
       ],
@@ -249,6 +264,24 @@ export default function SettingsScreen({ onDone }: Props) {
         </Pressable>
 
         <Text style={s.section}>Plan</Text>
+        {!pro && (
+          <Pressable
+            style={s.logoBtn}
+            onPress={async () => {
+              const res = await restorePurchases();
+              if (res.ok) {
+                setProState(true);
+                Alert.alert('Restored', 'Pro is unlocked on this device.');
+              } else if ('error' in res) {
+                Alert.alert('Restore', res.error);
+              } else if ('unavailable' in res) {
+                Alert.alert('Restore', 'Purchases are unavailable in this build.');
+              }
+            }}
+          >
+            <Text style={s.logoBtnText}>Restore Purchases</Text>
+          </Pressable>
+        )}
         <Text style={s.plan}>
           {pro
             ? 'Pro — unlimited invoices'
