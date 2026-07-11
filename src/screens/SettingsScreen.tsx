@@ -266,6 +266,35 @@ export default function SettingsScreen({ onDone }: Props) {
         <Text style={s.section}>Plan</Text>
         {!pro && (
           <Pressable
+            style={s.upgradeBtn}
+            onPress={async () => {
+              const res = await purchasePro();
+              if (res.ok) {
+                setProState(true);
+                Alert.alert('Welcome to Pro', 'Everything is unlocked. Thank you!');
+                return;
+              }
+              if ('cancelled' in res) return;
+              if ('unavailable' in res) {
+                if (__DEV__) {
+                  await setPro(true);
+                  setProState(true);
+                  return;
+                }
+                Alert.alert('Purchases unavailable', 'Please try again later.');
+                return;
+              }
+              Alert.alert('Purchase failed', res.error);
+            }}
+          >
+            <Text style={s.upgradeBtnText}>Upgrade to Billowe Pro — $19.99</Text>
+            <Text style={s.upgradeBtnSub}>
+              Unlimited invoices · 16 more templates · estimates · one-time
+            </Text>
+          </Pressable>
+        )}
+        {!pro && (
+          <Pressable
             style={s.logoBtn}
             onPress={async () => {
               const res = await restorePurchases();
@@ -347,6 +376,16 @@ const s = StyleSheet.create({
     color: T.ink,
   },
   plan: { fontSize: 14, color: T.muted, marginTop: 6 },
+  upgradeBtn: {
+    backgroundColor: T.accent,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 6,
+    marginBottom: 8,
+  },
+  upgradeBtnText: { color: '#fff', fontWeight: '700', fontSize: 15.5 },
+  upgradeBtnSub: { color: 'rgba(255,255,255,0.8)', fontSize: 11.5, marginTop: 3 },
   hint: { fontSize: 12, color: T.muted, marginTop: 6 },
   templateGrid: {
     flexDirection: 'row',
