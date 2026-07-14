@@ -10,7 +10,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.billowe.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Billowe needs access to your photos so you can add a logo to your invoices and estimates."
       }
     },
     "android": {

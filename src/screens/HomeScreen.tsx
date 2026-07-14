@@ -119,11 +119,7 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
           { text: 'Not now', style: 'cancel' },
           {
             text: 'Upgrade',
-            onPress: async () => {
-              // TODO: replace with RevenueCat purchase flow before launch.
-              await setPro(true);
-              onNewEstimate();
-            },
+            onPress: () => runUpgrade(onNewEstimate),
           },
         ],
       );

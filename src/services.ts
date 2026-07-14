@@ -132,9 +132,9 @@ export async function setPro(v: boolean): Promise<void> {
 export const FREE_INVOICES_PER_MONTH = 3;
 
 /**
- * v1 gate. TODO before launch: replace setPro with RevenueCat
- * (react-native-purchases) entitlement check, matching the SceneReady/Mise
- * setup. The package needs a dev build (not Expo Go), so it's excluded here.
+ * Free-tier gate. `isPro()` mirrors the RevenueCat "Pro" entitlement, kept in
+ * sync by src/purchases.ts on every launch/purchase/restore, so the UI can read
+ * it synchronously here. Free users are capped at FREE_INVOICES_PER_MONTH.
  */
 export async function canCreateInvoice(): Promise<boolean> {
   if (await isPro()) return true;
