@@ -1,8 +1,6 @@
 // src/services.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
 import { BusinessProfile, formatCents, Invoice, totalCents } from './models';
-import { invoicesCreatedInMonth } from './db';
 
 // ---------------- Settings ----------------
 
@@ -127,37 +125,40 @@ export async function setPro(v: boolean): Promise<void> {
   await AsyncStorage.setItem(K.pro, v ? '1' : '0');
 }
 
-// ---------------- Paywall ----------------
-
-export const FREE_INVOICES_PER_MONTH = 3;
-
-/**
- * Free-tier gate. `isPro()` mirrors the RevenueCat "Pro" entitlement, kept in
- * sync by src/purchases.ts on every launch/purchase/restore, so the UI can read
- * it synchronously here. Free users are capped at FREE_INVOICES_PER_MONTH.
- */
-export async function canCreateInvoice(): Promise<boolean> {
-  if (await isPro()) return true;
-  const used = await invoicesCreatedInMonth(new Date());
-  return used < FREE_INVOICES_PER_MONTH;
-}
-
 // ---------------- Notifications ----------------
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+// Lazily loaded so builds without the notifications module degrade to
+// "no reminders" instead of crashing at launch (requireOptionalNativeModule
+// pattern from HitchWell).
+type NotificationsModule = typeof import('expo-notifications');
+let _notifications: NotificationsModule | null | undefined;
+
+async function getNotifications(): Promise<NotificationsModule | null> {
+  if (_notifications !== undefined) return _notifications;
+  try {
+    const mod = await import('expo-notifications');
+    mod.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
+    });
+    _notifications = mod;
+  } catch {
+    _notifications = null;
+  }
+  return _notifications;
+}
 
 /** Schedule a due-date reminder at 09:00 local. Returns the notification id
  *  (store it on the invoice so it can be cancelled), or null if in the past
  *  or permission denied. */
 export async function scheduleDueReminder(inv: Invoice): Promise<string | null> {
   if (inv.kind === 'estimate') return null; // quotes don't get payment reminders
+  const Notifications = await getNotifications();
+  if (!Notifications) return null; // module absent in this build — degrade
   const { status } = await Notifications.requestPermissionsAsync();
   if (status !== 'granted') return null;
 
@@ -179,5 +180,7 @@ export async function scheduleDueReminder(inv: Invoice): Promise<string | null> 
 
 export async function cancelReminder(notificationId: string | null): Promise<void> {
   if (!notificationId) return;
+  const Notifications = await getNotifications();
+  if (!Notifications) return;
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }

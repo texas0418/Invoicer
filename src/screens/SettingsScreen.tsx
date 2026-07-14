@@ -13,8 +13,8 @@ import {
 import { FREE_TEMPLATE_ID, TEMPLATES } from '../invoiceHtml';
 import { exportBackup, restoreBackup } from '../backup';
 import { purchasePro, restorePurchases } from '../purchases';
+import { FREE_INVOICES_PER_MONTH, hasProAccess } from '../proAccess';
 import {
-  FREE_INVOICES_PER_MONTH,
   getBusinessProfile,
   getCurrencySymbol,
   getDefaultPaymentLink,
@@ -58,7 +58,7 @@ export default function SettingsScreen({ onDone }: Props) {
       setTax(((await getDefaultTaxRate()) * 100).toString());
       setLink(await getDefaultPaymentLink());
       setCurrency(await getCurrencySymbol());
-      setProState(await isPro());
+      setProState(await hasProAccess());
       setTemplateState(await getTemplate());
       setLogoState(await getLogoUri());
     })();

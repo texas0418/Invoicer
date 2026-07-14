@@ -26,10 +26,12 @@ import {
 import { emailPdf, sharePdf } from '../pdf';
 import {
   canCreateInvoice,
-  cancelReminder,
   FREE_INVOICES_PER_MONTH,
+  hasProAccess,
+} from '../proAccess';
+import {
+  cancelReminder,
   getBusinessProfile,
-  isPro,
   nextInvoiceNumber,
   scheduleDueReminder,
   setPro,
@@ -108,7 +110,7 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
 
   const handleNew = async () => {
     if (mode === 'estimate') {
-      if (await isPro()) {
+      if (await hasProAccess()) {
         onNewEstimate();
         return;
       }
@@ -119,7 +121,11 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
           { text: 'Not now', style: 'cancel' },
           {
             text: 'Upgrade',
-            onPress: () => runUpgrade(onNewEstimate),
+            onPress: async () => {
+              // TODO: replace with RevenueCat purchase flow before launch.
+              await setPro(true);
+              onNewEstimate();
+            },
           },
         ],
       );

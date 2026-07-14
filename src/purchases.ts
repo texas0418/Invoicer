@@ -95,3 +95,11 @@ export async function restorePurchases(): Promise<PurchaseResult> {
     return { ok: false, error: err.message ?? 'Restore failed. Please try again.' };
   }
 }
+
+/** True when the real purchase stack can work: native module present AND a
+ *  real API key configured. When false, Pro gates FAIL OPEN — the app never
+ *  locks features without a working way to pay. */
+export async function isOperational(): Promise<boolean> {
+  if (REVENUECAT_IOS_API_KEY.includes('PASTE_YOUR_KEY')) return false;
+  return (await getPurchases()) != null;
+}
