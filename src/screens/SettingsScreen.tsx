@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { FREE_TEMPLATE_ID, TEMPLATES } from '../invoiceHtml';
+import { FREE_TEMPLATE_ID, TemplateDef, TEMPLATES } from '../invoiceHtml';
 import { exportBackup, restoreBackup } from '../backup';
 import { previewTemplate } from '../pdf';
 // TEMP (screenshots): remove this import and the Developer block below to delete.
@@ -37,6 +37,120 @@ import { T } from '../theme';
 
 interface Props {
   onDone: () => void;
+}
+
+// Templates grouped by structural layout: the picker shows one card per layout
+// family (with a mini-preview of the structure) and colour chips for its
+// themes, so users choose by what the invoice actually looks like.
+const LAYOUT_ORDER = ['classic', 'minimal', 'bold', 'band', 'ledger'] as const;
+const LAYOUT_LABEL: Record<string, string> = {
+  classic: 'Classic',
+  minimal: 'Minimal',
+  bold: 'Bold',
+  band: 'Banner',
+  ledger: 'Ledger',
+};
+const FAMILIES = LAYOUT_ORDER.map((layout) => ({
+  layout,
+  variants: TEMPLATES.filter((t) => t.layout === layout),
+})).filter((f) => f.variants.length > 0);
+
+const GREY = '#e2e5ea';
+const HEAD = '#cbd0d8';
+
+/** A tiny stylised rendering of a layout's structure, coloured by the given
+ *  template's theme. Purely decorative — no real invoice data. */
+function LayoutThumb({ def }: { def: TemplateDef }) {
+  const accent = def.theme.accent;
+  const band = def.theme.band ?? def.theme.ink;
+  const tint = accent + '22'; // 8-digit hex = ~13% alpha
+
+  if (def.layout === 'minimal') {
+    return (
+      <View style={s.thumb}>
+        <View style={s.thumbPad}>
+          <View style={{ width: 20, height: 5, backgroundColor: HEAD, borderRadius: 2 }} />
+          <View style={{ height: 1.5, backgroundColor: accent, marginTop: 7 }} />
+          <View style={{ height: 2.5, width: '70%', backgroundColor: GREY, borderRadius: 1.5, marginTop: 14 }} />
+          <View style={{ height: 2.5, width: '88%', backgroundColor: GREY, borderRadius: 1.5, marginTop: 7 }} />
+          <View style={{ height: 2.5, width: '50%', backgroundColor: GREY, borderRadius: 1.5, marginTop: 7 }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (def.layout === 'bold') {
+    return (
+      <View style={s.thumb}>
+        <View style={{ height: 24, backgroundColor: band, paddingHorizontal: 7, justifyContent: 'center' }}>
+          <View style={{ width: 12, height: 6, backgroundColor: accent, borderRadius: 2, alignSelf: 'flex-end' }} />
+        </View>
+        <View style={s.thumbPadTight}>
+          <View style={{ height: 12, backgroundColor: tint, borderRadius: 3 }} />
+          <View style={{ height: 3, backgroundColor: GREY, borderRadius: 1.5, marginTop: 7 }} />
+          <View style={{ height: 3, backgroundColor: GREY, borderRadius: 1.5, marginTop: 5 }} />
+          <View style={{ height: 3, width: '60%', backgroundColor: GREY, borderRadius: 1.5, marginTop: 5 }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (def.layout === 'band') {
+    return (
+      <View style={s.thumb}>
+        <View style={{ height: 20, backgroundColor: band, justifyContent: 'center', paddingHorizontal: 7 }}>
+          <View style={{ width: 22, height: 6, backgroundColor: '#ffffffcc', borderRadius: 2 }} />
+        </View>
+        <View style={s.thumbPadTight}>
+          <View style={{ height: 9, backgroundColor: tint, borderLeftWidth: 3, borderLeftColor: accent }} />
+          <View style={{ height: 7, backgroundColor: GREY, marginTop: 6 }} />
+          <View style={{ height: 7, backgroundColor: '#fff' }} />
+          <View style={{ height: 7, backgroundColor: GREY }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (def.layout === 'ledger') {
+    const cell = { flex: 1, height: 10, borderWidth: 1, borderColor: GREY } as const;
+    return (
+      <View style={s.thumb}>
+        <View style={s.thumbPad}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: accent, paddingBottom: 4 }}>
+            <View style={{ width: 16, height: 5, backgroundColor: HEAD, borderRadius: 2 }} />
+            <View style={{ width: 10, height: 5, backgroundColor: accent, borderRadius: 2 }} />
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 6 }}>
+            <View style={cell} />
+            <View style={[cell, { borderLeftWidth: 0 }]} />
+            <View style={[cell, { borderLeftWidth: 0 }]} />
+          </View>
+          <View style={{ height: 6, backgroundColor: accent, marginTop: 6 }} />
+          <View style={{ borderWidth: 1, borderColor: GREY, borderTopWidth: 0, height: 20 }}>
+            <View style={{ height: 1, backgroundColor: GREY, marginTop: 6 }} />
+            <View style={{ height: 1, backgroundColor: GREY, marginTop: 5 }} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // classic
+  return (
+    <View style={s.thumb}>
+      <View style={s.thumbPad}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={{ width: 18, height: 5, backgroundColor: HEAD, borderRadius: 2 }} />
+          <View style={{ width: 12, height: 6, backgroundColor: accent, borderRadius: 2 }} />
+        </View>
+        <View style={{ height: 15, backgroundColor: tint, borderRadius: 3, marginTop: 7 }} />
+        <View style={{ height: 2, backgroundColor: accent, marginTop: 8 }} />
+        <View style={{ height: 3, backgroundColor: GREY, borderRadius: 1.5, marginTop: 6 }} />
+        <View style={{ height: 3, backgroundColor: GREY, borderRadius: 1.5, marginTop: 5 }} />
+        <View style={{ height: 3, width: '60%', backgroundColor: GREY, borderRadius: 1.5, marginTop: 5 }} />
+      </View>
+    </View>
+  );
 }
 
 export default function SettingsScreen({ onDone }: Props) {
@@ -221,32 +335,43 @@ export default function SettingsScreen({ onDone }: Props) {
         <Field label="Currency symbol" value={currency} onChange={setCurrency} />
 
         <Text style={s.section}>Invoice template</Text>
-        <View style={s.templateGrid}>
-          {TEMPLATES.map((t) => (
-            <Pressable
-              key={t.id}
-              style={[s.templateCard, template === t.id && s.templateCardOn]}
-              onPress={() => chooseTemplate(t.id)}
-            >
-              <View style={s.swatchRow}>
-                <View style={[s.swatch, { backgroundColor: t.swatch[0] }]} />
-                <View
-                  style={[
-                    s.swatch,
-                    { backgroundColor: t.swatch[1], borderWidth: 1, borderColor: T.rule },
-                  ]}
-                />
-              </View>
-              <Text
-                style={[s.templateName, template === t.id && s.templateNameOn]}
-                numberOfLines={1}
+        <View style={{ gap: 8, marginTop: 6 }}>
+          {FAMILIES.map(({ layout, variants }) => {
+            const active = variants.find((v) => v.id === template) ?? variants[0];
+            const selectedHere = variants.some((v) => v.id === template);
+            const current = variants.find((v) => v.id === template);
+            return (
+              <View
+                key={layout}
+                style={[s.familyCard, selectedHere && s.familyCardOn]}
               >
-                {t.name}
-                {t.id !== FREE_TEMPLATE_ID && !pro ? ' ✦' : ''}
-              </Text>
-              <Text style={s.templateBlurb} numberOfLines={1}>{t.blurb}</Text>
-            </Pressable>
-          ))}
+                <LayoutThumb def={active} />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={s.familyName}>{LAYOUT_LABEL[layout]}</Text>
+                  <Text style={s.familyBlurb} numberOfLines={1}>
+                    {current ? current.name : `${variants.length} colours`}
+                  </Text>
+                  <View style={s.chipRow}>
+                    {variants.map((v) => {
+                      const on = v.id === template;
+                      const locked = v.id !== FREE_TEMPLATE_ID && !pro;
+                      return (
+                        <Pressable
+                          key={v.id}
+                          onPress={() => chooseTemplate(v.id)}
+                          hitSlop={6}
+                          style={[s.chip, on && s.chipOn]}
+                        >
+                          <View style={[s.chipDot, { backgroundColor: v.swatch[0] }]} />
+                          {locked && <Text style={s.chipLock}>✦</Text>}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              </View>
+            );
+          })}
         </View>
         <Pressable
           style={s.logoBtn}
@@ -458,26 +583,42 @@ const s = StyleSheet.create({
   upgradeBtnText: { color: '#fff', fontWeight: '700', fontSize: 15.5 },
   upgradeBtnSub: { color: 'rgba(255,255,255,0.8)', fontSize: 11.5, marginTop: 3 },
   hint: { fontSize: 12, color: T.muted, marginTop: 6 },
-  templateGrid: {
+  familyCard: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 6,
-  },
-  templateCard: {
-    width: '31%',
-    backgroundColor: T.faint,
+    alignItems: 'center',
+    backgroundColor: T.card,
     borderRadius: 12,
     padding: 10,
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  swatchRow: { flexDirection: 'row', gap: 4, marginBottom: 6 },
-  swatch: { width: 16, height: 16, borderRadius: 8 },
-  templateCardOn: { borderColor: T.accent, backgroundColor: T.accentSoft },
-  templateName: { fontSize: 12, fontWeight: '700', color: T.ink },
-  templateNameOn: { color: T.accent },
-  templateBlurb: { fontSize: 9.5, color: T.muted, marginTop: 2 },
+  familyCardOn: { borderColor: T.accent, backgroundColor: T.accentSoft },
+  familyName: { fontSize: 14, fontWeight: '700', color: T.ink },
+  familyBlurb: { fontSize: 11, color: T.muted, marginTop: 1 },
+  chipRow: { flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' },
+  chip: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  chipOn: { borderColor: T.accent },
+  chipDot: { width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: '#00000010' },
+  chipLock: { position: 'absolute', top: -3, right: -3, fontSize: 9, color: T.warn },
+  thumb: {
+    width: 74,
+    height: 92,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: T.rule,
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+  },
+  thumbPad: { flex: 1, padding: 7 },
+  thumbPadTight: { flex: 1, paddingHorizontal: 7, paddingTop: 6 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 6 },
   logoPreview: { width: 120, height: 56, backgroundColor: T.faint, borderRadius: 8 },
   logoBtn: {
