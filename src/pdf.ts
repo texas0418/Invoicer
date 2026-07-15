@@ -3,26 +3,66 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { BusinessProfile, Invoice } from './models';
 import { invoiceHtml, TemplateId, TemplateOptions } from './invoiceHtml';
-import { getLogoUri, getTemplate } from './services';
+import { getBusinessProfile, getLogoUri, getTemplate } from './services';
+
+/** Read the saved logo (if any) as an embeddable data URI. */
+async function loadLogoDataUri(): Promise<string | null> {
+  const logoUri = await getLogoUri();
+  if (!logoUri) return null;
+  try {
+    const FileSystem = await import('expo-file-system/legacy');
+    const b64 = await FileSystem.readAsStringAsync(logoUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    const ext = logoUri.split('.').pop()?.toLowerCase();
+    const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+    return `data:${mime};base64,${b64}`;
+  } catch {
+    return null; // logo file missing — render without it
+  }
+}
 
 async function templateOptions(): Promise<TemplateOptions> {
   const template = (await getTemplate()) as TemplateId;
-  const logoUri = await getLogoUri();
-  let logoDataUri: string | null = null;
-  if (logoUri) {
-    try {
-      const FileSystem = await import('expo-file-system/legacy');
-      const b64 = await FileSystem.readAsStringAsync(logoUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      const ext = logoUri.split('.').pop()?.toLowerCase();
-      const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
-      logoDataUri = `data:${mime};base64,${b64}`;
-    } catch {
-      logoDataUri = null; // logo file missing — render without it
-    }
-  }
-  return { template, logoDataUri };
+  return { template, logoDataUri: await loadLogoDataUri() };
+}
+
+/** Representative document used to preview a template in the picker. Fixed
+ *  content so previews are stable and show tax, discount, and multiple lines. */
+const SAMPLE_INVOICE: Invoice = {
+  kind: 'invoice',
+  number: 'INV-0042',
+  issueDateMs: new Date(2026, 0, 12).getTime(),
+  dueDateMs: new Date(2026, 0, 26).getTime(),
+  clientName: 'Harbor & Vine Co.',
+  clientAddress: '128 Maple Avenue\nPortland, OR 97204',
+  clientEmail: 'accounts@harborandvine.com',
+  taxRate: 0.0875,
+  discountCents: 15000,
+  currencySymbol: '$',
+  paymentLink: 'https://pay.example.com/inv-0042',
+  notes: 'Thank you for your business! Payment due within 14 days.',
+  status: 'sent',
+  notificationId: null,
+  payments: [],
+  items: [
+    { description: 'Brand identity design', quantity: 1, unitPriceCents: 180000 },
+    { description: 'Website design (5 pages)', quantity: 1, unitPriceCents: 240000 },
+    { description: 'Revision rounds', quantity: 3, unitPriceCents: 12000 },
+  ],
+};
+
+/** Open the native print/preview sheet showing a sample invoice rendered with
+ *  the given template and the user's own business details + logo. Lets the
+ *  user see any template — including locked Pro ones — before choosing. */
+export async function previewTemplate(template: TemplateId): Promise<void> {
+  const biz = await getBusinessProfile();
+  await Print.printAsync({
+    html: invoiceHtml(SAMPLE_INVOICE, biz, {
+      template,
+      logoDataUri: await loadLogoDataUri(),
+    }),
+  });
 }
 
 /** Open the system print/preview sheet for the rendered document. On iOS this

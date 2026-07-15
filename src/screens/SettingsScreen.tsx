@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { FREE_TEMPLATE_ID, TEMPLATES } from '../invoiceHtml';
 import { exportBackup, restoreBackup } from '../backup';
+import { previewTemplate } from '../pdf';
 // TEMP (screenshots): remove this import and the Developer block below to delete.
 import { clearSampleData, seedSampleData } from '../devSeed';
 import { purchasePro, restorePurchases } from '../purchases';
@@ -66,16 +67,26 @@ export default function SettingsScreen({ onDone }: Props) {
     })();
   }, []);
 
-  const requirePro = (then: () => void) => {
+  const requirePro = (then: () => void, previewId?: string) => {
     if (pro) {
       then();
       return;
     }
     Alert.alert(
-      'Pro feature',
-      'All 17 templates are part of Pro. $19.99 once — no subscription.',
+      'Pro template',
+      'Preview any template. Unlock all 17 with Billowe Pro — $19.99 once, no subscription.',
       [
         { text: 'Not now', style: 'cancel' },
+        ...(previewId
+          ? [
+              {
+                text: 'Preview',
+                onPress: () => {
+                  previewTemplate(previewId).catch(() => {});
+                },
+              },
+            ]
+          : []),
         {
           text: 'Upgrade',
           onPress: async () => {
@@ -112,7 +123,7 @@ export default function SettingsScreen({ onDone }: Props) {
     requirePro(() => {
       setTemplateState(id);
       setTemplate(id);
-    });
+    }, id);
   };
 
   const pickLogo = async () => {
@@ -237,6 +248,13 @@ export default function SettingsScreen({ onDone }: Props) {
             </Pressable>
           ))}
         </View>
+        <Pressable
+          style={s.logoBtn}
+          onPress={() => previewTemplate(template).catch(() => {})}
+        >
+          <Text style={s.logoBtnText}>Preview selected template</Text>
+        </Pressable>
+        <Text style={s.hint}>Opens a sample invoice with your business details.</Text>
 
         <Text style={s.section}>Logo</Text>
         {logo ? (
