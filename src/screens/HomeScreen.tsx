@@ -23,7 +23,7 @@ import {
   paidCents,
   totalCents,
 } from '../models';
-import { emailPdf, sharePdf } from '../pdf';
+import { emailPdf, previewPdf, sharePdf } from '../pdf';
 import {
   canCreateInvoice,
   FREE_INVOICES_PER_MONTH,
@@ -154,6 +154,15 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
       await db.setInvoiceStatus(inv.id, 'sent');
       const notifId = await scheduleDueReminder(inv);
       await db.setInvoiceNotificationId(inv.id, notifId);
+    }
+  };
+
+  const preview = async (inv: Invoice) => {
+    const biz = await getBusinessProfile();
+    try {
+      await previewPdf(inv, biz);
+    } catch {
+      // sheet dismissed or printing unavailable — nothing to do
     }
   };
 
@@ -403,6 +412,9 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
                     ? `${formatCents(balanceCents(selected), selected.currencySymbol)} remaining of ${formatCents(totalCents(selected), selected.currencySymbol)}`
                     : formatCents(totalCents(selected), selected.currencySymbol)}
                 </Text>
+                <Pressable style={s.sheetBtn} onPress={() => preview(selected)}>
+                  <Text style={s.sheetBtnText}>View PDF</Text>
+                </Pressable>
                 <Pressable style={s.sheetPrimary} onPress={() => email(selected)}>
                   <Text style={s.sheetPrimaryText}>Email to client</Text>
                 </Pressable>

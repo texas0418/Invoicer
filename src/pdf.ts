@@ -25,6 +25,14 @@ async function templateOptions(): Promise<TemplateOptions> {
   return { template, logoDataUri };
 }
 
+/** Open the system print/preview sheet for the rendered document. On iOS this
+ *  presents a full PDF preview (scroll, pinch-zoom, print, and share) without
+ *  leaving the app. Uses the same HTML the shared/emailed PDF is generated
+ *  from, so what the user sees is exactly what they send. */
+export async function previewPdf(inv: Invoice, biz: BusinessProfile): Promise<void> {
+  await Print.printAsync({ html: invoiceHtml(inv, biz, await templateOptions()) });
+}
+
 /** Render the invoice to a PDF file and open the system share sheet. */
 export async function sharePdf(inv: Invoice, biz: BusinessProfile): Promise<void> {
   const { uri } = await Print.printToFileAsync({ html: invoiceHtml(inv, biz, await templateOptions()) });
