@@ -39,9 +39,11 @@ export async function initPurchases(): Promise<void> {
     // reinstalled app (or one restored from backup with a stale flag) heals.
     const info = await Purchases.getCustomerInfo();
     await setPro(info.entitlements.active[PRO_ENTITLEMENT_ID] != null);
-  } catch {
+  } catch (e) {
     // Offline at launch: keep whatever the local flag says; RevenueCat's own
-    // cache will reconcile on a later launch.
+    // cache will reconcile on a later launch. But an *invalid API key* also
+    // lands here and silently breaks every purchase — surface it in dev.
+    if (__DEV__) console.warn('[purchases] configure/init failed:', e);
   }
 }
 
@@ -59,10 +61,22 @@ export async function purchasePro(): Promise<PurchaseResult> {
     const offerings = await Purchases.getOfferings();
     const pkg = offerings.current?.availablePackages[0];
     if (!pkg) {
+      // No package to buy → the Apple sheet never opens ("nothing happens").
+      // Causes: current offering not set in RevenueCat, no package attached,
+      // products not yet fetchable from StoreKit (IAP not "Ready to Submit",
+      // Paid Apps agreement unsigned, or still propagating), or a bad API key.
+      if (__DEV__) {
+        console.warn(
+          '[purchases] no purchasable package. current offering:',
+          offerings.current?.identifier ?? '(none)',
+          '| all offerings:', Object.keys(offerings.all),
+          '| current packages:', offerings.current?.availablePackages.length ?? 0,
+        );
+      }
       return {
         ok: false,
         error:
-          'Purchases are not available right now. Please try again later.',
+          'No purchase products are available yet. This usually means the App Store product or RevenueCat offering isn’t live yet.',
       };
     }
     const { customerInfo } = await Purchases.purchasePackage(pkg);
@@ -75,6 +89,7 @@ export async function purchasePro(): Promise<PurchaseResult> {
   } catch (e) {
     const err = e as { userCancelled?: boolean; message?: string };
     if (err.userCancelled) return { ok: false, cancelled: true };
+    if (__DEV__) console.warn('[purchases] purchase failed:', e);
     return { ok: false, error: err.message ?? 'Purchase failed. Please try again.' };
   }
 }

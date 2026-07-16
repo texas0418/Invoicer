@@ -19,8 +19,8 @@ Order matters — App Store Connect first, then RevenueCat, then paste the key.
 ## 2. RevenueCat dashboard (app.revenuecat.com)
 1. New project "Billowe" → add an App Store app with the same bundle ID.
    Connect App Store Connect via the App Store Connect API key it asks for.
-2. Entitlements → new entitlement with identifier exactly: `pro`
-   (must match PRO_ENTITLEMENT_ID in src/purchases.ts)
+2. Entitlements → new entitlement with identifier exactly: `Pro`
+   (must match PRO_ENTITLEMENT_ID in src/purchases.ts — case-sensitive)
 3. Products → import/add `billowe_pro_lifetime` → attach it to the `pro`
    entitlement.
 4. Offerings → the `default` offering → add a package containing
