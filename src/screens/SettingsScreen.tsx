@@ -13,8 +13,6 @@ import {
 import { FREE_TEMPLATE_ID, TemplateDef, TEMPLATES } from '../invoiceHtml';
 import { exportBackup, restoreBackup } from '../backup';
 import { previewTemplate } from '../pdf';
-// TEMP (screenshots): remove this import and the Developer block below to delete.
-import { clearSampleData, seedSampleData } from '../devSeed';
 import { purchasePro, restorePurchases } from '../purchases';
 import { FREE_INVOICES_PER_MONTH, hasProAccess } from '../proAccess';
 import {
@@ -461,57 +459,6 @@ export default function SettingsScreen({ onDone }: Props) {
             ? 'Pro — unlimited invoices'
             : `Free — ${FREE_INVOICES_PER_MONTH} invoices/month`}
         </Text>
-
-        {/* TEMP (screenshots) — dev-only; never ships in release builds. */}
-        {__DEV__ && (
-          <>
-            <Text style={s.section}>Developer</Text>
-            <Pressable
-              style={s.logoBtn}
-              onPress={() =>
-                Alert.alert(
-                  'Seed sample data?',
-                  'This REPLACES all current data with a sample set for screenshots.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                      text: 'Seed',
-                      style: 'destructive',
-                      onPress: async () => {
-                        await seedSampleData();
-                        Alert.alert('Done', 'Sample data loaded.', [
-                          { text: 'OK', onPress: onDone },
-                        ]);
-                      },
-                    },
-                  ],
-                )
-              }
-            >
-              <Text style={s.logoBtnText}>Seed sample data</Text>
-            </Pressable>
-            <Pressable
-              style={[s.logoBtn, { marginTop: 8 }]}
-              onPress={() =>
-                Alert.alert('Clear all data?', 'Deletes every invoice, estimate, client, and item.', [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Clear',
-                    style: 'destructive',
-                    onPress: async () => {
-                      await clearSampleData();
-                      Alert.alert('Cleared', 'All data removed.', [
-                        { text: 'OK', onPress: onDone },
-                      ]);
-                    },
-                  },
-                ])
-              }
-            >
-              <Text style={[s.logoBtnText, { color: T.danger }]}>Clear all data</Text>
-            </Pressable>
-          </>
-        )}
       </ScrollView>
     </View>
   );
