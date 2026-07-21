@@ -4,6 +4,12 @@ on:
   pull_request:
     branches: [dev]
 
+# gitleaks-action lists the PR's commits via the API; the default token on
+# this repo is contents/metadata-read only, so grant pull-requests: read.
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   quality:
     name: quality
