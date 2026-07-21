@@ -58,6 +58,10 @@ async function runUpgrade(onSuccess: () => void): Promise<void> {
     Alert.alert('Purchases unavailable', 'Please try again later.');
     return;
   }
+  if ('pending' in res) {
+    Alert.alert('Purchase received', 'Unlocking Pro… this can take a moment on a slow connection. It will unlock automatically.');
+    return;
+  }
   Alert.alert('Purchase failed', res.error);
 }
 

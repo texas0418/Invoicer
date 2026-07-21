@@ -35,6 +35,13 @@ export async function initPurchases(): Promise<void> {
   if (!Purchases) return;
   try {
     Purchases.configure({ apiKey: REVENUECAT_IOS_API_KEY });
+    // Heal the UI whenever RevenueCat reports an entitlement change — including
+    // a purchase whose receipt only syncs seconds later on a slow network.
+    Purchases.addCustomerInfoUpdateListener((info) => {
+      const entitled = info.entitlements.active[PRO_ENTITLEMENT_ID] != null;
+      void setPro(entitled);
+      emitPro(entitled);
+    });
     // Mirror the real entitlement into local settings on every launch, so a
     // reinstalled app (or one restored from backup with a stale flag) heals.
     const info = await Purchases.getCustomerInfo();
@@ -51,7 +58,28 @@ export type PurchaseResult =
   | { ok: true }
   | { ok: false; cancelled: true }
   | { ok: false; error: string }
-  | { ok: false; unavailable: true };
+  | { ok: false; unavailable: true }
+  // Payment succeeded but RevenueCat hasn't reported the entitlement yet
+  // (slow/flaky network). The customer-info listener will flip Pro on shortly.
+  | { ok: false; pending: true };
+
+// ---- Pro-status subscription -------------------------------------------
+// Screens subscribe so the UI flips to Pro the instant RevenueCat syncs the
+// entitlement — even seconds after a purchase on a bad connection.
+type ProListener = (entitled: boolean) => void;
+const proListeners = new Set<ProListener>();
+
+/** Subscribe to Pro-entitlement changes. Returns an unsubscribe function. */
+export function subscribeProStatus(cb: ProListener): () => void {
+  proListeners.add(cb);
+  return () => {
+    proListeners.delete(cb);
+  };
+}
+
+function emitPro(entitled: boolean): void {
+  for (const cb of proListeners) cb(entitled);
+}
 
 /** Buy the Pro one-time purchase (first package of the current offering). */
 export async function purchasePro(): Promise<PurchaseResult> {
@@ -82,10 +110,13 @@ export async function purchasePro(): Promise<PurchaseResult> {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
     const entitled =
       customerInfo.entitlements.active[PRO_ENTITLEMENT_ID] != null;
-    await setPro(entitled);
-    return entitled
-      ? { ok: true }
-      : { ok: false, error: 'Purchase completed but Pro was not unlocked. Try Restore Purchases.' };
+    if (entitled) {
+      await setPro(true);
+      return { ok: true };
+    }
+    // Payment went through but the entitlement hasn't landed yet (slow network).
+    // Report pending — the customer-info listener flips Pro on when it syncs.
+    return { ok: false, pending: true };
   } catch (e) {
     const err = e as { userCancelled?: boolean; message?: string };
     if (err.userCancelled) return { ok: false, cancelled: true };
