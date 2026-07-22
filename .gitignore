@@ -2,3 +2,7 @@ node_modules/
 .expo/
 .DS_Store
 *.zip
+
+# Generated native projects (managed workflow / CNG)
+/ios/
+/android/
