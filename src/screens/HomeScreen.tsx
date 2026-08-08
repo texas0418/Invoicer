@@ -37,6 +37,7 @@ import {
   setPro,
 } from '../services';
 import { purchasePro } from '../purchases';
+import { maybeAskForReview } from '../review';
 import { shadow, statusTint, T } from '../theme';
 
 
@@ -203,7 +204,12 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
       totalCents(inv),
       inv.status,
     );
-    if (newStatus === 'paid') await cancelReminder(inv.notificationId);
+    if (newStatus === 'paid') {
+      await cancelReminder(inv.notificationId);
+      // Fire-and-forget: the earned-value moment. Asks once ever, from the
+      // second paid invoice onward; fails open if the module is absent.
+      maybeAskForReview();
+    }
     setPayingFor(null);
     setSelected(null);
     load();
