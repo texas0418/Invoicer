@@ -20,17 +20,12 @@ Expo + EAS builds (no local Xcode), RevenueCat planned for IAP.
     npx expo install --fix # aligns package minors to SDK 54 exactly
     npx expo start         # scan QR with Expo Go on your phone
 
-## Before launch
-1. RevenueCat: paywall is stubbed (search "TODO" — the Upgrade button just
-   sets a local flag). Add react-native-purchases + a dev build, mirror the
-   SceneReady/Mise setup.
-2. expo-notifications in Expo Go is limited on Android; test reminders in a
-   dev build. iOS local notifications work in Expo Go.
-3. app.json: set real name/slug/bundleIdentifier before `eas build`.
-4. Invoice numbers increment even if a save subsequently fails (harmless gap).
-5. No invoice editing after creation (delete + recreate) — intentional v1 cut.
-6. Editor list prices display "$" until settings load the symbol; the saved
-   invoice and PDF always use the configured symbol.
+## To-dos and bugs
+
+Tracked in [GitHub Issues](https://github.com/texas0418/Invoicer/issues) — the
+`pre-ship` label is the App Store submission checklist, `tech-debt` items have
+inline eslint-disables pointing at them, and `handoff` issues carry
+session-to-session notes. See AGENTS.md for the PR/CI workflow.
 
 ## Structure
     src/models.ts       types + money utils (integer cents everywhere)

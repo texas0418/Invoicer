@@ -13,7 +13,7 @@ import {
 import { FREE_TEMPLATE_ID, TemplateDef, TEMPLATES } from '../invoiceHtml';
 import { exportBackup, restoreBackup } from '../backup';
 import { previewTemplate } from '../pdf';
-import { purchasePro, restorePurchases } from '../purchases';
+import { purchasePro, restorePurchases, subscribeProStatus } from '../purchases';
 import { FREE_INVOICES_PER_MONTH, hasProAccess } from '../proAccess';
 import {
   getBusinessProfile,
@@ -177,6 +177,12 @@ export default function SettingsScreen({ onDone }: Props) {
       setTemplateState(await getTemplate());
       setLogoState(await getLogoUri());
     })();
+    // Flip the Upgrade button live when RevenueCat confirms the entitlement —
+    // e.g. a purchase whose receipt syncs a few seconds later on weak wifi.
+    const unsub = subscribeProStatus((entitled) => {
+      if (entitled) setProState(true);
+    });
+    return unsub;
   }, []);
 
   const requirePro = (then: () => void, previewId?: string) => {
@@ -217,6 +223,10 @@ export default function SettingsScreen({ onDone }: Props) {
                 return;
               }
               Alert.alert('Purchases unavailable', 'Please try again later.');
+              return;
+            }
+            if ('pending' in res) {
+              Alert.alert('Purchase received', 'Unlocking Pro… this can take a moment on a slow connection.');
               return;
             }
             Alert.alert('Purchase failed', res.error);
@@ -425,6 +435,10 @@ export default function SettingsScreen({ onDone }: Props) {
                   return;
                 }
                 Alert.alert('Purchases unavailable', 'Please try again later.');
+                return;
+              }
+              if ('pending' in res) {
+                Alert.alert('Purchase received', 'Unlocking Pro… this can take a moment on a slow connection. It will unlock automatically.');
                 return;
               }
               Alert.alert('Purchase failed', res.error);
