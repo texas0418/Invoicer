@@ -1,0 +1,45 @@
+BILLOWE — GOOGLE PLAY STORE LISTING (draft 2026-08-16)
+========================================================
+
+APP NAME (30 chars max)
+Billowe: Invoice Maker
+
+SHORT DESCRIPTION (80 chars max)
+Make a clean, professional invoice PDF on your phone and send it in minutes.
+
+FULL DESCRIPTION (4000 chars max)
+-----------------------------------------------------
+The work is done. Now get paid without wrestling a spreadsheet.
+
+Billowe is invoicing for freelancers and small operators: build a professional invoice on your phone, watch the totals compute themselves, export a clean PDF, and send it from any app you like. No account, no subscription trap, no invoicing "platform" between you and your client.
+
+INVOICES THAT LOOK LIKE YOU MEAN BUSINESS
+• A clean, professional PDF template clients take seriously
+• Your details, their details, line items, rates, quantities — done
+• Money math handled properly (to the cent, every time)
+• Numbering that keeps itself in order
+
+TRACK WHAT MATTERS
+• Draft, sent, paid — see where every invoice stands
+• Per-client history when you need to check what you billed last time
+
+YOURS, LOCALLY
+Everything lives on your phone. Clients, amounts, and history are your business, not ours — no cloud, no analytics, no account.
+
+Do the work. Send the bill. Get paid. Billowe handles the middle part.
+-----------------------------------------------------
+
+CATEGORY: Business
+WEBSITE: https://simonbuilds.app/billowe/
+PRIVACY POLICY URL (verified live 2026-08-16): https://simonbuilds.app/privacy-billowe
+
+GRAPHIC ASSETS (store/): icon + feature graphic DONE; screenshots-android/ from release APK this run
+
+DATA SAFETY: local-first, nothing collected; purchases via RevenueCat when IAP ships (README says "planned") — verify in-app before declaring
+CONTENT RATING: Everyone
+
+ANDROID QA NOTES
+- expo-print/PDF export is the core feature — physical-device check before submission (WebView pagination, same caveat as Inkwell/LessonLedger)
+
+RELEASE NOTES (first release)
+Billowe arrives on Android: build a professional invoice on your phone, export a clean PDF, and send it anywhere — all local, no account.
