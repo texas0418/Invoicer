@@ -6,11 +6,17 @@
 //    RevenueCat is the source of *truth* and we mirror it on every
 //    configure/purchase/restore.
 
+import { Platform } from 'react-native';
+
 import { setPro } from './services';
 
 // PASTE YOUR KEY: RevenueCat dashboard → Project → API keys → Apple App Store.
-// Starts with "appl_". The Google key can be added later for Android.
+// Starts with "appl_".
 const REVENUECAT_IOS_API_KEY = 'appl_NtbPFeIlKuImVRgpYeQWFbkvrtu';
+// Google Play public SDK key, RC project 96485d8e.
+const REVENUECAT_ANDROID_API_KEY = 'goog_UFqiQCKAjlcAEpOnXPINgltMQkk';
+const REVENUECAT_API_KEY =
+  Platform.OS === 'android' ? REVENUECAT_ANDROID_API_KEY : REVENUECAT_IOS_API_KEY;
 
 export const PRO_ENTITLEMENT_ID = 'Pro';
 
@@ -34,7 +40,7 @@ export async function initPurchases(): Promise<void> {
   const Purchases = await getPurchases();
   if (!Purchases) return;
   try {
-    Purchases.configure({ apiKey: REVENUECAT_IOS_API_KEY });
+    Purchases.configure({ apiKey: REVENUECAT_API_KEY });
     // Heal the UI whenever RevenueCat reports an entitlement change — including
     // a purchase whose receipt only syncs seconds later on a slow network.
     Purchases.addCustomerInfoUpdateListener((info) => {
