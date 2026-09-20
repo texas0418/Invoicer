@@ -23,7 +23,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.billowe.app"
+      "package": "com.billowe.app",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
