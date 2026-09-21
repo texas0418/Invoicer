@@ -39,6 +39,7 @@ import {
 import { purchasePro } from '../purchases';
 import { maybeAskForReview } from '../review';
 import { shadow, statusTint, T } from '../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 // Shared purchase flow: real RevenueCat purchase in builds; dev unlock in Expo Go.
@@ -79,6 +80,7 @@ interface Props {
 }
 
 export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice, onManage, onSettings }: Props) {
+  const insets = useSafeAreaInsets();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [mode, setMode] = useState<'invoice' | 'estimate'>('invoice');
   const [filter, setFilter] = useState<Filter>('all');
@@ -281,7 +283,7 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
   return (
     <View style={s.container}>
       {/* Ledger header */}
-      <View style={s.header}>
+      <View style={[s.header, { paddingTop: 12 + insets.top }]}>
         <View style={s.headerTop}>
           <Text style={s.eyebrow}>
             {mode === 'invoice' ? 'OUTSTANDING' : 'OPEN ESTIMATES'}
@@ -398,7 +400,7 @@ export default function HomeScreen({ onNewInvoice, onNewEstimate, onEditInvoice,
         }}
       />
 
-      <Pressable style={[s.fab, shadow]} onPress={handleNew}>
+      <Pressable style={[s.fab, shadow, { bottom: 28 + insets.bottom }]} onPress={handleNew}>
         <Text style={s.fabText}>
           ＋ {mode === 'invoice' ? 'New invoice' : 'New estimate'}
         </Text>

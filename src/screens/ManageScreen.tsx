@@ -12,6 +12,7 @@ import {
 import * as db from '../db';
 import { CatalogItem, Client, formatCents } from '../models';
 import { T } from '../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   onDone: () => void;
@@ -20,6 +21,7 @@ interface Props {
 type Tab = 'clients' | 'items';
 
 export default function ManageScreen({ onDone }: Props) {
+  const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<Tab>('clients');
   const [clients, setClients] = useState<Client[]>([]);
   const [items, setItems] = useState<CatalogItem[]>([]);
@@ -78,7 +80,7 @@ export default function ManageScreen({ onDone }: Props) {
 
   return (
     <View style={s.container}>
-      <View style={s.topBar}>
+      <View style={[s.topBar, { paddingTop: 10 + insets.top }]}>
         <Pressable onPress={onDone} hitSlop={8}>
           <Text style={s.topAction}>‹ Back</Text>
         </Pressable>

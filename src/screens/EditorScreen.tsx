@@ -32,6 +32,7 @@ import {
   scheduleDueReminder,
 } from '../services';
 import { T } from '../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   kind: 'invoice' | 'estimate';
@@ -42,6 +43,7 @@ interface Props {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export default function EditorScreen({ kind, existing, onDone }: Props) {
+  const insets = useSafeAreaInsets();
   const [clients, setClients] = useState<Client[]>([]);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [client, setClient] = useState<Client | null>(null);
@@ -170,7 +172,7 @@ export default function EditorScreen({ kind, existing, onDone }: Props) {
       style={{ flex: 1, backgroundColor: T.bg }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={s.topBar}>
+      <View style={[s.topBar, { paddingTop: 10 + insets.top }]}>
         <Pressable onPress={() => onDone(false)} hitSlop={8}>
           <Text style={s.topAction}>Cancel</Text>
         </Pressable>
