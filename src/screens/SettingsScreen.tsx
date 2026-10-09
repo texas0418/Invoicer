@@ -32,6 +32,7 @@ import {
   setDefaultTaxRate,
 } from '../services';
 import { T } from '../theme';
+import MoreApps from '../components/MoreApps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
@@ -475,6 +476,7 @@ export default function SettingsScreen({ onDone }: Props) {
             ? 'Pro — unlimited invoices'
             : `Free — ${FREE_INVOICES_PER_MONTH} invoices/month`}
         </Text>
+        <MoreApps />
       </ScrollView>
     </View>
   );
