@@ -2,7 +2,7 @@
   "expo": {
     "name": "Billowe",
     "slug": "billowe",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -13,7 +13,7 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "Billowe needs access to your photos so you can add a logo to your invoices and estimates."
       },
-      "buildNumber": "12"
+      "buildNumber": "13"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +23,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.billowe.app"
+      "package": "com.billowe.app",
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"

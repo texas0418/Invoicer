@@ -32,6 +32,8 @@ import {
   setDefaultTaxRate,
 } from '../services';
 import { T } from '../theme';
+import MoreApps from '../components/MoreApps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   onDone: () => void;
@@ -152,6 +154,7 @@ function LayoutThumb({ def }: { def: TemplateDef }) {
 }
 
 export default function SettingsScreen({ onDone }: Props) {
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
@@ -320,7 +323,7 @@ export default function SettingsScreen({ onDone }: Props) {
 
   return (
     <View style={s.container}>
-      <View style={s.topBar}>
+      <View style={[s.topBar, { paddingTop: 10 + insets.top }]}>
         <Pressable onPress={onDone} hitSlop={8}>
           <Text style={s.topAction}>‹ Back</Text>
         </Pressable>
@@ -473,6 +476,7 @@ export default function SettingsScreen({ onDone }: Props) {
             ? 'Pro — unlimited invoices'
             : `Free — ${FREE_INVOICES_PER_MONTH} invoices/month`}
         </Text>
+        <MoreApps />
       </ScrollView>
     </View>
   );

@@ -21,12 +21,14 @@ import {
   setOnboarded,
 } from '../services';
 import { shadow, T } from '../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   onDone: () => void;
 }
 
 export default function OnboardingScreen({ onDone }: Props) {
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [tax, setTax] = useState('');
@@ -72,7 +74,7 @@ export default function OnboardingScreen({ onDone }: Props) {
       style={s.root}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[s.scroll, { paddingTop: 48 + insets.top, paddingBottom: 48 + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <Text style={s.kicker}>WELCOME</Text>
         <Text style={s.title}>Let's set up your invoices</Text>
         <Text style={s.sub}>
